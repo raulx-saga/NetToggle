@@ -6,28 +6,34 @@ import android.os.Build
 import android.provider.Settings
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
+import android.widget.Toast
 
-// A TileService = the logic behind one Quick Settings tile.
 class ToggleTileService : TileService() {
 
-    // Called when the panel is opened and our tile becomes visible.
     override fun onStartListening() {
         val tile = qsTile ?: return
-        tile.state = Tile.STATE_INACTIVE   // greyed look; ACTIVE would be highlighted
-        tile.updateTile()                  // apply the change
+        tile.state = Tile.STATE_INACTIVE
+        tile.updateTile()
     }
 
-    // Called when the user taps the tile.
     override fun onClick() {
-        // An Intent = "please open this screen". This one is the mobile network settings.
-        val intent = Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val robot = ToggleAccessibilityService.instance
 
-        // Android 14+ wants a PendingIntent when launching from a tile; older versions take the Intent directly.
+        if (robot == null) {
+            // Robot not switched on yet: send the user to the Accessibility screen instead.
+            Toast.makeText(this, "Turn on NetToggle under Accessibility first", Toast.LENGTH_LONG).show()
+            launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            return
+        }
+
+        robot.arm()                                                   // 1. tell the robot to start watching
+        launch(Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS))     // 2. open the settings screen
+    }
+
+    private fun launch(intent: Intent) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (Build.VERSION.SDK_INT >= 34) {
-            val pending = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
-            )
+            val pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             startActivityAndCollapse(pending)
         } else {
             @Suppress("DEPRECATION")

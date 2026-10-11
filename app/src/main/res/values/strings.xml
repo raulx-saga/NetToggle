@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">NetToggle</string>
     <string name="tile_label">5G / 4G</string>
+    <string name="a11y_description">Lets NetToggle tap the Network mode option in Settings for you when you press the tile. It only acts for a few seconds after you press the tile.</string>
 </resources>
