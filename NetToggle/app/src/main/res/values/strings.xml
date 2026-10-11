@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NetToggle</string>
+    <string name="tile_label">5G / 4G</string>
+</resources>
